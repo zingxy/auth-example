@@ -1,0 +1,30 @@
+### 登录
+POST http://localhost:3456/api/auth/signin HTTP/1.1
+Content-Type: application/json
+
+{
+    "username":"hong",
+    "password":"123456"
+}
+
+### 注册
+POST http://localhost:3456/api/auth/signup HTTP/1.1
+Content-Type: application/json
+
+
+{
+    "username":"hong",
+    "password":"123456"
+}
+### 注销
+POST http://localhost:3456/api/auth/signout HTTP/1.1
+Content-Type: application/json
+
+
+### 
+
+GET http://localhost:3456/api/test/admin HTTP/1.1
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYjk4NzdmODlmMzM3NmZmZWE5NzY1NiIsImlhdCI6MTY3MzEwNTA3OCwiZXhwIjoxNjczMTA1MjU4fQ.JDm-YBMksa3Zpq3U5kV8yO9ZiYZ4i2qL5pn53eWxyEA
+### middleware
+
+GET http://localhost:3456
