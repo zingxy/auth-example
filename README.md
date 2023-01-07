@@ -28,5 +28,6 @@ AUTH-EXAMPLE\APP
 
 ## TODOS
 
-[] 增加前端部分
-[] JWT Refresh Token
+- [] 增加前端部分
+
+- [] JWT Refresh Token
