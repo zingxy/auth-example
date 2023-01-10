@@ -1,14 +1,15 @@
 # Auth-example
 
-面试的时候，前端问的比较多的问题：怎么做的登录？
+## Motivation
 
-如果自己没有动手写过一个比较完整的登录流程，这个问题不是特别好回答，遂写一个简单的 DEMO 加深理解
+简单 Role-based 系统
 
 ## Stack
 
 - Express
 - MongoDB
 - Mongoose
+- React
 
 ## 流程
 
