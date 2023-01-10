@@ -5,7 +5,7 @@ import express from "express";
 
 const router = express.Router();
 
-router.post("/api/auth/signup", [checkSignup], controller.signup);
-router.post("/api/auth/signin", controller.signin);
-router.post("/api/auth/signout", controller.signout);
+router.post("/signup", [checkSignup], controller.signup);
+router.post("/signin", controller.signin);
+router.post("/signout", controller.signout);
 export default router;

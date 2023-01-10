@@ -1,7 +1,6 @@
 import process from "node:process";
 import express from "express";
 import cors from "cors";
-import cookieSession from "cookie-session";
 
 import dbConfig from "./app/config/db.config.js";
 import db from "./app/models/index.js";
@@ -9,7 +8,11 @@ import db from "./app/models/index.js";
 import authRouter from "./app/routes/auth.routes.js";
 import userRouter from "./app/routes/user.routes.js";
 
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
+
 /* 连接数据库 */
+db.mongoose.set("strictQuery", "false");
 db.mongoose
   .connect(`mongodb://${dbConfig.HOST}:${dbConfig.PORT}/${dbConfig.DB}`)
   .then(() => {
@@ -21,6 +24,21 @@ db.mongoose
   });
 
 const app = express();
+
+/* SwaggerApi SwaggerUi */
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Hello World",
+      version: "1.0.0",
+    },
+  },
+  apis: ["./app/routes/*.routes.js"], // files containing annotations as above
+};
+
+const swaggerDocument = swaggerJSDoc(options);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
 
 /* 配置跨源 */
 app.use(
@@ -37,9 +55,9 @@ app.use(express.json());
 /* application/x-www-form-urlencoded */
 app.use(express.urlencoded({ extended: true }));
 
-app.use(authRouter);
-app.use(userRouter);
-app.get(
+app.use("/api/auth", authRouter);
+app.use("/api/test", userRouter);
+/* app.get(
   "/",
   (req, res, next) => {
     console.log("Middleware 1 start");
@@ -63,7 +81,7 @@ app.get(
     console.log("endpoint end");
   }
 );
-
+ */
 app.listen(3456, () => {
   console.log("server:http://localhost:3456");
 });

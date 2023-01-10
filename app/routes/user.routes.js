@@ -5,11 +5,11 @@ import express from "express";
 
 const router = express.Router();
 
-router.get("/api/test/public", controller.publicAccess);
-router.get("/api/test/user", [middlewares.checkToken], controller.userBoard);
+router.get("/public", controller.publicAccess);
+router.get("/user", [middlewares.checkToken], controller.userBoard);
 
 router.get(
-  "/api/test/admin",
+  "/admin",
   [middlewares.checkToken, middlewares.checkAdmin],
   controller.adminBoard
 );
