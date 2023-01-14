@@ -6,15 +6,13 @@ export function checkSignup(req, res, next) {
   const username = req.body.username;
   db.User.findOne({ username }, (err, user) => {
     if (err) {
-      res.status(200).send({
-        code: CODE.DB_ERROR,
+      res.status(503).send({
         msg: "数据库异常",
       });
       return;
     }
     if (user) {
-      res.status(200).send({
-        code: CODE.USER_ALREADY_EXISTED,
+      res.status(400).send({
         msg: "用户已存在",
       });
       return;

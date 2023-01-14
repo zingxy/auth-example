@@ -9,23 +9,30 @@ export function checkToken(req, res, next) {
   // 改用jwt来做
   const token = req.headers.authorization;
 
-  debugger;
   if (!token) {
-    return res.status(200).send({
-      code: CODE.NOT_SIGN_IN,
+    return res.status(401).send({
       msg: "用户没有登录",
     });
   }
+  /* 我们把用户id放在token里面 */
+
   jwt.verify(token, SECRET_KEY, (err, payload) => {
     if (err) {
-      return res.status(200).send({
-        code: CODE.TOKEN_EXPIRED,
+      return res.status(401).send({
         msg: "登录过期",
       });
     }
-    /* 我们把用户id放在token里面 */
+    /* 验证通过后，每个请求对象都会带上这个参数 */
     req.userId = payload.id;
-    next();
+    db.Role.find({ _id: { $in: user.roles } }, (err, roles) => {
+      if (err) {
+        return res.status(500).send({
+          msg: "请重试",
+        });
+      }
+      req.roles = roles.map((r) => r.name);
+      next();
+    });
   });
 }
 /* checkToken-> judge role */

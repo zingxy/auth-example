@@ -57,7 +57,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/test", userRouter);
-/* app.get(
+app.get(
   "/",
   (req, res, next) => {
     console.log("Middleware 1 start");
@@ -81,7 +81,18 @@ app.use("/api/test", userRouter);
     console.log("endpoint end");
   }
 );
- */
+
+app.use((req, res, next) => {
+  console.log(req.url);
+  next();
+});
+
+app.use((req, res, next) => {
+  res.status(404).send({
+    msg: "not founded",
+  });
+});
+
 app.listen(3456, () => {
   console.log("server:http://localhost:3456");
 });

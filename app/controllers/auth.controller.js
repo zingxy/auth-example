@@ -14,8 +14,7 @@ export function signup(req, res) {
 
   user.save((err) => {
     if (err) {
-      return res.status(200).send({
-        code: CODE.DB_ERROR,
+      return res.status(503).send({
         msg: "数据库错误",
       });
     }
@@ -24,8 +23,7 @@ export function signup(req, res) {
     if (req.body.isAdmin) {
       db.Role.findOne({ name: "admin" }, (err, role) => {
         if (err) {
-          return res.status(200).send({
-            code: CODE.DB_ERROR,
+          return res.status(503).send({
             msg: "数据库错误",
           });
         }
@@ -33,13 +31,11 @@ export function signup(req, res) {
         user.roles = [role];
         user.save((err) => {
           if (err) {
-            return res.status(200).send({
-              code: CODE.DB_ERROR,
+            return res.status(503).send({
               msg: "数据库错误",
             });
           }
           return res.status(200).send({
-            code: CODE.SUCCESS,
             msg: "用户注册成功",
           });
         });
@@ -47,8 +43,7 @@ export function signup(req, res) {
     } else {
       db.Role.findOne({ name: "user" }, (err, role) => {
         if (err) {
-          return res.status(200).send({
-            code: CODE.DB_ERROR,
+          return res.status(503).send({
             msg: "数据库错误",
           });
         }
@@ -56,13 +51,12 @@ export function signup(req, res) {
         user.roles = [role];
         user.save((err) => {
           if (err) {
-            return res.status(200).send({
-              code: CODE.DB_ERROR,
+            return res.status(503).send({
               msg: "数据库错误",
             });
           }
+
           return res.status(200).send({
-            code: CODE.SUCCESS,
             msg: "用户注册成功",
           });
         });
@@ -73,49 +67,98 @@ export function signup(req, res) {
 
 /* 登录逻辑 */
 export function signin(req, res) {
-  db.User.findOne({ username: req.body.username }, (err, user) => {
+  db.User.findOne({ username: req.body.username }, async (err, user) => {
     if (err) {
-      return res.status(200).send({
+      return res.status(503).send({
         code: CODE.DB_ERROR,
         msg: "数据库错误",
       });
     }
     if (!user) {
-      return res.status(200).send({
-        code: CODE.USER_NOT_EXISTED,
+      return res.status(400).send({
         msg: "用户不存在",
       });
     }
     if (user.password !== req.body.password) {
-      return res.status(200).send({
-        code: CODE.PASSWORD_ERROR,
+      return res.status(400).send({
         msg: "密码错误",
       });
     }
+
     /* 登录成功 */
-
-    const token = jwt.sign({ id: user.id }, SECRET_KEY, {
-      expiresIn: 3 * 60,
+    const accessToken = jwt.sign({ id: user.id }, SECRET_KEY, {
+      expiresIn: 5 * 60,
     });
+    const refreshToken = await db.RefreshToken.createToken(user);
+
+    db.Role.find({ _id: { $in: user.roles } }, (err, roles) => {
+      if (err) {
+        return res.status(500).send({
+          msg: "请重试",
+        });
+      }
+
+      return res.status(200).send({
+        msg: "登录成功",
+        id: user._id,
+        username: user.username,
+        roles: roles.map((r) => r.name),
+        accessToken,
+        refreshToken,
+      });
+    });
+
     // 设置cookie
-
-    res.status(200).send({
-      code: CODE.SUCCESS,
-      msg: "登录成功",
-      id: user.id,
-      username: user.username,
-      token,
-    });
   });
 }
 
 /* 注销逻辑 */
 export function signout(req, res) {
-  req.session = null;
+  // TODO 注销逻辑
   return res.status(200).send({
-    code: CODE.SUCCESS,
     msg: "注销成功",
   });
 }
 
-/* Resource */
+/* refreshToken */
+
+export async function refreshToken(req, res) {
+  /**
+   * @var {clientRefreshToken} db.RefreshToken
+   */
+  debugger;
+  const clientRefreshTokenID = req.body.refreshToken;
+  if (!clientRefreshTokenID) {
+    return res.status(403).json({
+      msg: "未登录",
+    });
+  }
+  /**
+   * refreshToken存在db中，因此可以服务端注销的功能
+   */
+
+  const refreshToken = await db.RefreshToken.findById(clientRefreshTokenID);
+
+  if (db.RefreshToken.verifyExpiration(refreshToken)) {
+    refreshToken.delete();
+    return res.status(403).json({
+      msg: "未登录",
+    });
+  }
+
+  /* 创建新的accesstoken */
+  const newAccessToken = jwt.sign(
+    {
+      id: clientRefreshTokenID.userId,
+    },
+    SECRET_KEY,
+    {
+      expiresIn: 5 * 60,
+    }
+  );
+
+  return res.status(200).json({
+    newAccessToken,
+    refreshToken: refreshToken._id,
+  });
+}

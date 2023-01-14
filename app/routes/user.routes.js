@@ -13,4 +13,8 @@ router.get(
   [middlewares.checkToken, middlewares.checkAdmin],
   controller.adminBoard
 );
+router.get("/profile", [middlewares.checkToken], controller.gerUserProfile);
+
+
+
 export default router;
